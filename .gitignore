@@ -1,0 +1,29 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+build/
+dist/
+
+# Virtual environments
+.venv/
+venv/
+env/
+.conda/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Experiment outputs
+runs/
+logs/
+checkpoints/
+*.pt
+*.pth
+*.npz
+
+# IDE / OS
+.vscode/
+.idea/
+.DS_Store
