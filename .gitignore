@@ -23,6 +23,9 @@ checkpoints/
 *.pth
 *.npz
 
+# Machine-specific configs
+configs/*_local.yml
+
 # IDE / OS
 .vscode/
 .idea/
