@@ -1,0 +1,87 @@
+"""Smoke test: load a PenGym scenario in simulation mode and run a random agent.
+
+Usage:
+    python scripts/smoke_test.py
+    python scripts/smoke_test.py --scenario tiny --episodes 20
+    python scripts/smoke_test.py --scenario external/PenGym/database/scenarios/medium-multi-site.yml
+"""
+
+import argparse
+import contextlib
+import io
+import sys
+from pathlib import Path
+
+import numpy as np
+
+REPO_ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(REPO_ROOT / "external" / "PenGym"))
+
+import pengym  # noqa: E402
+import pengym.utilities as pengym_utils  # noqa: E402
+
+DEFAULT_SCENARIO = REPO_ROOT / "external" / "PenGym" / "database" / "scenarios" / "medium-multi-site.yml"
+
+
+def make_env(scenario, seed):
+    """Create a PenGym env in NASim simulation mode (no cyber range, no Metasploit/nmap)."""
+    pengym_utils.ENABLE_PENGYM = False
+    pengym_utils.ENABLE_NASIM = True
+
+    # PenGym prints a line per action; keep it quiet unless --verbose
+    with contextlib.redirect_stdout(io.StringIO()):
+        if Path(scenario).is_file():
+            env = pengym.load(str(scenario))
+        else:
+            env = pengym.create_environment(scenario)  # NASim benchmark name, e.g. "tiny"
+
+    np.random.seed(seed)  # NASim samples exploit success with the global numpy RNG
+    env.action_space.seed(seed)
+    return env
+
+
+def run_random_episode(env, max_steps, seed, verbose):
+    env.reset(seed=seed)
+    total_reward = 0.0
+    out = sys.stdout if verbose else io.StringIO()
+
+    for step in range(1, max_steps + 1):
+        action = env.action_space.sample()
+        with contextlib.redirect_stdout(out):
+            _, reward, done, truncated, _ = env.step(action)
+        total_reward += reward
+        if done or truncated:
+            return step, total_reward, done
+
+    return max_steps, total_reward, False
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    parser.add_argument("--scenario", default=str(DEFAULT_SCENARIO),
+                        help="Path to a PenGym/NASim .yml scenario, or a NASim benchmark name")
+    parser.add_argument("--episodes", type=int, default=5)
+    parser.add_argument("--max-steps", type=int, default=1000)
+    parser.add_argument("--seed", type=int, default=0)
+    parser.add_argument("--verbose", action="store_true", help="Show PenGym's per-action output")
+    args = parser.parse_args()
+
+    env = make_env(args.scenario, args.seed)
+    print(f"Scenario:     {args.scenario}")
+    print(f"Actions:      {env.action_space.n}")
+    print(f"Observation:  {env.observation_space.shape}")
+    print()
+
+    results = []
+    for ep in range(args.episodes):
+        steps, reward, success = run_random_episode(env, args.max_steps, args.seed + ep, args.verbose)
+        results.append((steps, reward, success))
+        print(f"Episode {ep + 1:>3}: steps={steps:>5}  reward={reward:>9.1f}  goal_reached={success}")
+
+    steps, rewards, successes = zip(*results)
+    print()
+    print(f"Success rate: {np.mean(successes):.0%}  |  mean steps: {np.mean(steps):.1f}  |  mean reward: {np.mean(rewards):.1f}")
+
+
+if __name__ == "__main__":
+    main()
