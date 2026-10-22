@@ -17,10 +17,15 @@ import numpy as np
 REPO_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO_ROOT / "external" / "PenGym"))
 
-import pengym  # noqa: E402
-import pengym.utilities as pengym_utils  # noqa: E402
+# pylint: disable=wrong-import-position
+import pengym
+import pengym.utilities as pengym_utils
 
-DEFAULT_SCENARIO = REPO_ROOT / "external" / "PenGym" / "database" / "scenarios" / "medium-multi-site.yml"
+# pylint: enable=wrong-import-position
+
+DEFAULT_SCENARIO = (
+    REPO_ROOT / "external" / "PenGym" / "database" / "scenarios" / "medium-multi-site.yml"
+)
 
 
 def make_env(scenario, seed):
@@ -41,6 +46,7 @@ def make_env(scenario, seed):
 
 
 def run_random_episode(env, max_steps, seed, verbose):
+    """Run one episode with random actions. Returns (steps, total_reward, goal_reached)."""
     env.reset(seed=seed)
     total_reward = 0.0
     out = sys.stdout if verbose else io.StringIO()
@@ -57,9 +63,15 @@ def run_random_episode(env, max_steps, seed, verbose):
 
 
 def main():
-    parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument("--scenario", default=str(DEFAULT_SCENARIO),
-                        help="Path to a PenGym/NASim .yml scenario, or a NASim benchmark name")
+    """Parse arguments, run random episodes, and print a summary."""
+    parser = argparse.ArgumentParser(
+        description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
+    )
+    parser.add_argument(
+        "--scenario",
+        default=str(DEFAULT_SCENARIO),
+        help="Path to a PenGym/NASim .yml scenario, or a NASim benchmark name",
+    )
     parser.add_argument("--episodes", type=int, default=5)
     parser.add_argument("--max-steps", type=int, default=1000)
     parser.add_argument("--seed", type=int, default=0)
@@ -74,13 +86,20 @@ def main():
 
     results = []
     for ep in range(args.episodes):
-        steps, reward, success = run_random_episode(env, args.max_steps, args.seed + ep, args.verbose)
+        steps, reward, success = run_random_episode(
+            env, args.max_steps, args.seed + ep, args.verbose
+        )
         results.append((steps, reward, success))
-        print(f"Episode {ep + 1:>3}: steps={steps:>5}  reward={reward:>9.1f}  goal_reached={success}")
+        print(
+            f"Episode {ep + 1:>3}: steps={steps:>5}  reward={reward:>9.1f}  goal_reached={success}"
+        )
 
     steps, rewards, successes = zip(*results)
     print()
-    print(f"Success rate: {np.mean(successes):.0%}  |  mean steps: {np.mean(steps):.1f}  |  mean reward: {np.mean(rewards):.1f}")
+    print(
+        f"Success rate: {np.mean(successes):.0%}  |  "
+        f"mean steps: {np.mean(steps):.1f}  |  mean reward: {np.mean(rewards):.1f}"
+    )
 
 
 if __name__ == "__main__":

@@ -95,6 +95,27 @@ python run.py -n -d ../../configs/pengym_local.yml
 
 A successful run ends with `* NORMAL execution: 16 steps`.
 
+## Code Style
+
+All Python code is formatted with [black](https://black.readthedocs.io/) and linted with
+[pylint](https://pylint.readthedocs.io/). Settings live in `pyproject.toml`. A GitHub Action runs both on
+every push and pull request, and fails if either check does not pass.
+
+Install the tools once:
+
+```bash
+pip install -r requirements-dev.txt
+```
+
+Before committing, run:
+
+```bash
+black .
+pylint $(git ls-files '*.py')
+```
+
+`black .` rewrites files in place to the shared style. `pylint` reports issues you need to fix by hand.
+
 ## Reproducing Results
 
 _To be added._

@@ -1,0 +1,22 @@
+[tool.black]
+line-length = 100
+target-version = ["py312"]
+extend-exclude = "external/"
+
+[tool.pylint.main]
+py-version = "3.12"
+ignore-paths = ["external/.*"]
+# Let pylint resolve `import pengym` from the submodule
+init-hook = "import sys; sys.path.insert(0, 'external/PenGym')"
+
+[tool.pylint.format]
+max-line-length = 100
+
+[tool.pylint."messages control"]
+disable = [
+    "invalid-name",
+    "too-few-public-methods",
+    "too-many-arguments",
+    "too-many-positional-arguments",
+    "too-many-locals",
+]
