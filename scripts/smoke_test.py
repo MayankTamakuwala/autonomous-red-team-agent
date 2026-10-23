@@ -52,7 +52,7 @@ def run_random_episode(env, max_steps, seed, verbose):
     out = sys.stdout if verbose else io.StringIO()
 
     for step in range(1, max_steps + 1):
-        action = env.action_space.sample()
+        action = int(env.action_space.sample())
         with contextlib.redirect_stdout(out):
             _, reward, done, truncated, _ = env.step(action)
         total_reward += reward
