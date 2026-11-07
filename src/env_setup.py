@@ -32,7 +32,7 @@ def make_env(scenario, seed=None, memory=True):
             Note: the same name can exist in both places with different contents. "tiny" loads
             NASim's original; SCENARIO_DIR / "tiny.yml" would load PenGym's edited version.
         seed: if given, seeds NumPy's global Random Number Generator (NASim uses it to roll exploit
-            success) and the action space. Still pass a seed to env.reset() for a fully reproducible 
+            success) and the action space. Still pass a seed to env.reset() for a fully reproducible
             episode.
         memory: if True, wrap the env in MemoryWrapper so observations accumulate everything
             seen so far in the episode. If False, return the raw env, whose observations only
