@@ -14,35 +14,12 @@ from pathlib import Path
 
 import numpy as np
 
-REPO_ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(REPO_ROOT / "external" / "PenGym"))
+# Lets `python scripts/smoke_test.py` import from src/ (the repo root is not on the path otherwise)
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-# pylint: disable=wrong-import-position
-import pengym
-import pengym.utilities as pengym_utils
+from src.env_setup import SCENARIO_DIR, make_env  # pylint: disable=wrong-import-position
 
-# pylint: enable=wrong-import-position
-
-DEFAULT_SCENARIO = (
-    REPO_ROOT / "external" / "PenGym" / "database" / "scenarios" / "medium-multi-site.yml"
-)
-
-
-def make_env(scenario, seed):
-    """Create a PenGym env in NASim simulation mode (no cyber range, no Metasploit/nmap)."""
-    pengym_utils.ENABLE_PENGYM = False
-    pengym_utils.ENABLE_NASIM = True
-
-    # PenGym prints a line per action; keep it quiet unless --verbose
-    with contextlib.redirect_stdout(io.StringIO()):
-        if Path(scenario).is_file():
-            env = pengym.load(str(scenario))
-        else:
-            env = pengym.create_environment(scenario)  # NASim benchmark name, e.g. "tiny"
-
-    np.random.seed(seed)  # NASim samples exploit success with the global numpy RNG
-    env.action_space.seed(seed)
-    return env
+DEFAULT_SCENARIO = SCENARIO_DIR / "medium-multi-site.yml"
 
 
 def run_random_episode(env, max_steps, seed, verbose):
@@ -78,7 +55,7 @@ def main():
     parser.add_argument("--verbose", action="store_true", help="Show PenGym's per-action output")
     args = parser.parse_args()
 
-    env = make_env(args.scenario, args.seed)
+    env = make_env(args.scenario, seed=args.seed)
     print(f"Scenario:     {args.scenario}")
     print(f"Actions:      {env.action_space.n}")
     print(f"Observation:  {env.observation_space.shape}")
