@@ -16,8 +16,12 @@ jobs:
         with:
           python-version: "3.12"
 
+      # CPU-only PyTorch: the default Linux build includes several GB of CUDA libraries,
+      # which exceeds the runner's disk space and is not needed for linting
       - name: Install dependencies
-        run: pip install -r requirements.txt -r requirements-dev.txt
+        run: |
+          pip install torch==2.15.0 --index-url https://download.pytorch.org/whl/cpu
+          pip install -r requirements.txt -r requirements-dev.txt
 
       - name: Check formatting (black)
         run: black --check --diff .
