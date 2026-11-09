@@ -1,7 +1,7 @@
 """One place to create PenGym environments in simulation mode.
 
 Usage:
-    from src.env_setup import make_env, SCENARIO_DIR
+    from src.env.env_setup import make_env, SCENARIO_DIR
 
     env = make_env("tiny", seed=0)                                  # NASim built-in benchmark
     env = make_env(SCENARIO_DIR / "medium-multi-site.yml", seed=0)  # PenGym scenario file
@@ -17,9 +17,9 @@ from pathlib import Path
 
 import numpy as np
 
-from src.memory_wrapper import MemoryWrapper
+from src.env.memory_wrapper import MemoryWrapper
 
-REPO_ROOT = Path(__file__).resolve().parents[1]
+REPO_ROOT = Path(__file__).resolve().parents[2]
 PENGYM_DIR = REPO_ROOT / "external" / "PenGym"
 SCENARIO_DIR = PENGYM_DIR / "database" / "scenarios"
 
