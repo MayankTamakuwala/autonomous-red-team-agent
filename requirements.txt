@@ -3,6 +3,9 @@ nasim==0.12.0
 gymnasium==1.4.0
 numpy==2.5.4
 
+# Neural network math for the agent (the RL algorithm itself is written from scratch)
+torch==2.15.0
+
 # Imported by PenGym at startup; no Metasploit server or nmap binary is needed in simulation mode
 pymetasploit3==1.0.6
 python-nmap==0.7.1
