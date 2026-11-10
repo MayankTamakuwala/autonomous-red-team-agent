@@ -1,3 +1,6 @@
 # Code style tools (not needed to run the project)
 black==25.1.0
 pylint==3.3.4
+
+# Tests
+pytest==8.3.4

@@ -95,11 +95,12 @@ python run.py -n -d ../../configs/pengym_local.yml
 
 A successful run ends with `* NORMAL execution: 16 steps`.
 
-## Code Style
+## Code Style and Tests
 
 All Python code is formatted with [black](https://black.readthedocs.io/) and linted with
-[pylint](https://pylint.readthedocs.io/). Settings live in `pyproject.toml`. A GitHub Action runs both on
-every push and pull request, and fails if either check does not pass.
+[pylint](https://pylint.readthedocs.io/). Tests live in `tests/` and run with
+[pytest](https://docs.pytest.org/). Settings live in `pyproject.toml`. A GitHub Action runs all three
+on every push and pull request, and fails if any check does not pass.
 
 Install the tools once:
 
@@ -112,9 +113,11 @@ Before committing, run:
 ```bash
 black .
 pylint $(git ls-files '*.py')
+pytest
 ```
 
 `black .` rewrites files in place to the shared style. `pylint` reports issues you need to fix by hand.
+`pytest` runs the tests (a few seconds, on NASim's tiny scenario).
 
 ## Reproducing Results
 
