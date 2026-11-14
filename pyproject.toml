@@ -20,3 +20,8 @@ disable = [
     "too-many-positional-arguments",
     "too-many-locals",
 ]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+# Lets tests import from src/
+pythonpath = ["."]

@@ -28,3 +28,6 @@ jobs:
 
       - name: Lint (pylint)
         run: pylint $(git ls-files '*.py')
+
+      - name: Tests (pytest)
+        run: pytest

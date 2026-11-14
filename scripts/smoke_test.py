@@ -17,7 +17,7 @@ import numpy as np
 # Lets `python scripts/smoke_test.py` import from src/ (the repo root is not on the path otherwise)
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from src.env_setup import SCENARIO_DIR, make_env  # pylint: disable=wrong-import-position
+from src.env.env_setup import SCENARIO_DIR, make_env  # pylint: disable=wrong-import-position
 
 DEFAULT_SCENARIO = SCENARIO_DIR / "medium-multi-site.yml"
 

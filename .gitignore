@@ -8,8 +8,8 @@ dist/
 
 # Virtual environments
 .venv/
-venv/
-env/
+/venv/
+/env/
 .conda/
 
 # Jupyter
