@@ -132,21 +132,23 @@ pytest
 - **Training charts:** total reward and steps per episode from a run's `episodes.csv`, with a
   20-episode moving average.
 
-Train a config, then open the GUI for the same config:
+Train a config, then open the GUI for the run it produced. Runs are named `<config>_seed<N>`:
 
 ```bash
 python scripts/train.py --config configs/tiny.yml
-python scripts/visualize.py --config configs/tiny.yml
+python scripts/visualize.py --run tiny_seed0
 ```
 
-This replays `checkpoints/tiny_seed0.pt` (or a random agent if there is no checkpoint) and charts
+This reads the run's settings from `results/tiny_seed0/config.yml`, replays
+`checkpoints/tiny_seed0.pt` (or a random agent if there is no checkpoint), and charts
 `results/tiny_seed0/episodes.csv`. Other options:
 
 ```bash
-python scripts/visualize.py --config configs/tiny.yml --seed 2      # the run trained with --seed 2
-python scripts/visualize.py --config configs/tiny.yml --manual      # you choose the actions
+python scripts/visualize.py --run tiny_seed2                  # another seed of the same config
+python scripts/visualize.py                                   # the most recently trained run
+python scripts/visualize.py --run tiny_seed0 --manual         # you choose the actions
 python scripts/visualize.py --scenario external/PenGym/database/scenarios/small-honeypot.yml
-python scripts/visualize.py --config configs/tiny.yml --save-charts tiny.png   # charts as an image
+python scripts/visualize.py --run tiny_seed0 --save-charts tiny.png   # charts as an image
 ```
 
 **Manual mode** (M, or `--manual`): click a host and pick an action from its menu. Backspace undoes
