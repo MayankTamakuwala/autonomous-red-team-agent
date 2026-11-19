@@ -1,0 +1,29 @@
+# 8 hosts, 72 actions. Subnets are linked in a ring, so the agent works through them one by one.
+scenario: external/PenGym/database/scenarios/small-linear.yml
+seed: 0
+
+# How long to train
+total_steps: 300000
+max_episode_steps: 1000
+
+# Network and learning
+hidden_size: 128
+lr: 0.0005
+gamma: 0.95
+
+# Replay buffer
+batch_size: 32
+buffer_capacity: 100000
+learning_starts: 5000
+train_every: 1
+
+# Target network
+target_update: 1000
+
+# Exploration (epsilon drops from start to end over eps_decay_steps)
+eps_start: 1.0
+eps_end: 0.05
+eps_decay_steps: 150000
+
+# Print a progress line every N episodes
+log_every: 20

@@ -1,0 +1,29 @@
+# 3 hosts, 27 actions. Like tiny, but with more exploits and privilege escalations to choose from.
+scenario: external/PenGym/database/scenarios/tiny-hard.yml
+seed: 0
+
+# How long to train
+total_steps: 30000
+max_episode_steps: 1000
+
+# Network and learning
+hidden_size: 64
+lr: 0.0005
+gamma: 0.95
+
+# Replay buffer
+batch_size: 32
+buffer_capacity: 50000
+learning_starts: 1000
+train_every: 1
+
+# Target network
+target_update: 500
+
+# Exploration (epsilon drops from start to end over eps_decay_steps)
+eps_start: 1.0
+eps_end: 0.05
+eps_decay_steps: 15000
+
+# Print a progress line every N episodes
+log_every: 20
