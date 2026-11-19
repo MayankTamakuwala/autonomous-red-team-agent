@@ -8,6 +8,8 @@ py-version = "3.12"
 ignore-paths = ["external/.*"]
 # Let pylint resolve `import pengym` from the submodule
 init-hook = "import sys; sys.path.insert(0, 'external/PenGym')"
+# pygame is a C extension; let pylint import it to see its constants and functions
+extension-pkg-allow-list = ["pygame"]
 
 [tool.pylint.format]
 max-line-length = 100

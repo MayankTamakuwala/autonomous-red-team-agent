@@ -119,6 +119,43 @@ pytest
 `black .` rewrites files in place to the shared style. `pylint` reports issues you need to fix by hand.
 `pytest` runs the tests (a few seconds, on NASim's tiny scenario).
 
+## Demo GUI
+
+`scripts/visualize.py` opens a window with two views; Tab switches between them.
+
+- **Attack replay:** the network as a radial map. The attacker sits in the center and each ring is one
+  more hop from the internet; a subnet is an arc of hosts on its ring. An episode plays step by step:
+  each action travels from the host it was launched from, and hosts change as the agent discovers them
+  (cyan), gets a user shell (`$`, amber), and gets root (`#`, red). Gold rings mark sensitive hosts and
+  dashed magenta rings mark honeypots. The side panel shows the action, its result and reward, the
+  running total, redundant and failed action counts, and the trained agent's top-scored next actions.
+- **Training charts:** total reward and steps per episode from a run's `episodes.csv`, with a
+  20-episode moving average.
+
+Train a config, then open the GUI for the same config:
+
+```bash
+python scripts/train.py --config configs/tiny.yml
+python scripts/visualize.py --config configs/tiny.yml
+```
+
+This replays `checkpoints/tiny_seed0.pt` (or a random agent if there is no checkpoint) and charts
+`results/tiny_seed0/episodes.csv`. Other options:
+
+```bash
+python scripts/visualize.py --config configs/tiny.yml --seed 2      # the run trained with --seed 2
+python scripts/visualize.py --config configs/tiny.yml --manual      # you choose the actions
+python scripts/visualize.py --scenario external/PenGym/database/scenarios/small-honeypot.yml
+python scripts/visualize.py --config configs/tiny.yml --save-charts tiny.png   # charts as an image
+```
+
+**Manual mode** (M, or `--manual`): click a host and pick an action from its menu. Backspace undoes
+the last action, and T lets the agent take over from the current state. Pressing M during a replay
+takes control from the step on screen.
+
+**Keys:** Space play/pause · ←/→ step · Home/End jump · +/− speed · A switch between the trained and
+random agent · N new episode · G show the hidden ground truth on hover · H list all keys.
+
 ## Reproducing Results
 
 _To be added._
