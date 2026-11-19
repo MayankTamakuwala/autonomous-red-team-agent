@@ -52,6 +52,7 @@ DEFAULTS = {
     "eps_end": 0.05,
     "eps_decay_steps": 10_000,
     "log_every": 20,
+    "double_dqn": False,
 }
 
 
@@ -143,6 +144,7 @@ def train(cfg):
         hidden_size=cfg["hidden_size"],
         lr=cfg["lr"],
         gamma=cfg["gamma"],
+        double=cfg["double_dqn"],
     )
     buffer = ReplayBuffer(cfg["buffer_capacity"])
 
