@@ -17,6 +17,7 @@ dist/
 
 # Experiment outputs
 runs/
+results/
 logs/
 checkpoints/
 *.pt

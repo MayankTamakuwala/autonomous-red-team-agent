@@ -16,12 +16,17 @@ class DQNAgent:
         n_actions: number of actions (env.action_space.n).
         hidden_size: number of units in each hidden layer of the Q-network.
         device: where the network runs, e.g. "cpu", "cuda", or "mps".
+        double: if True, use Double DQN targets: the Q-network picks the next action
+        and the target network scores it. If False, plain DQN.
     """
 
-    def __init__(self, obs_size, n_actions, hidden_size=64, device="cpu", lr=0.001, gamma=0.99):
+    def __init__(
+        self, obs_size, n_actions, hidden_size=64, device="cpu", lr=0.001, gamma=0.99, double=False
+    ):
         self.n_actions = n_actions
         self.device = device
         self.gamma = gamma
+        self.double = double
 
         # Network learns and picks actions
         self.q_net = QNetwork(obs_size, n_actions, hidden_size).to(device)
@@ -68,7 +73,12 @@ class DQNAgent:
         predicted = q_values.gather(1, actions.unsqueeze(1)).squeeze(1)
 
         with torch.no_grad():
-            next_value = self.target_net(next_obs).max(dim=1).values
+            if self.double:
+                # Q-network picks the best next action, target network scores it
+                best_next = self.q_net(next_obs).argmax(dim=1, keepdim=True)
+                next_value = self.target_net(next_obs).gather(1, best_next).squeeze(1)
+            else:
+                next_value = self.target_net(next_obs).max(dim=1).values
             target = rewards + self.gamma * next_value * (1 - dones)
 
         # Huber loss so large errors don't cause huge updates.

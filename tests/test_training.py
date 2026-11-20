@@ -31,6 +31,19 @@ def same_weights(before, after):
     return all(torch.equal(a, b) for a, b in zip(before, after))
 
 
+def test_learn_updates_q_net_but_not_target_double():
+    """learn() returns a float loss, changes the Q-network, and leaves the target network alone."""
+    torch.manual_seed(0)
+    agent = DQNAgent(OBS_SIZE, N_ACTIONS, double=True)
+    q_before, target_before = weights(agent.q_net), weights(agent.target_net)
+
+    loss = agent.learn(make_batch())
+
+    assert isinstance(loss, float)
+    assert not same_weights(q_before, weights(agent.q_net))
+    assert same_weights(target_before, weights(agent.target_net))
+
+
 def test_learn_updates_q_net_but_not_target():
     """learn() returns a float loss, changes the Q-network, and leaves the target network alone."""
     torch.manual_seed(0)

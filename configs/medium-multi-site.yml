@@ -3,13 +3,13 @@ scenario: external/PenGym/database/scenarios/medium-multi-site.yml
 seed: 0
 
 # How long to train
-total_steps: 300000
+total_steps: 500000
 max_episode_steps: 2000
 
 # Network and learning
 hidden_size: 256
 lr: 0.0005
-gamma: 0.99
+gamma: 0.95
 
 # Replay buffer
 batch_size: 64
@@ -23,7 +23,7 @@ target_update: 2000
 # Exploration (epsilon drops from start to end over eps_decay_steps)
 eps_start: 1.0
 eps_end: 0.05
-eps_decay_steps: 150000
+eps_decay_steps: 250000
 
 # Print a progress line every N episodes
 log_every: 10

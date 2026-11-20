@@ -2,6 +2,7 @@
 nasim==0.12.0
 gymnasium==1.4.0
 numpy==2.5.4
+pyyaml==6.0.3  # reads the training configs in configs/
 
 # Neural network math for the agent (the RL algorithm itself is written from scratch)
 torch==2.15.0
