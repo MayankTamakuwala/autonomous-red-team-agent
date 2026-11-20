@@ -1,4 +1,4 @@
-# Quick sanity-check run. 
+# Quick sanity-check run.
 scenario: external/PenGym/database/scenarios/tiny.yml
 seed: 0
 
@@ -9,7 +9,7 @@ max_episode_steps: 1000
 # Network and learning
 hidden_size: 64
 lr: 0.0005
-gamma: 0.99
+gamma: 0.95
 
 # Replay buffer
 batch_size: 32
