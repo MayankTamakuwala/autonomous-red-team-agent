@@ -48,3 +48,13 @@ def test_charts_render(tmp_path):
     out = tmp_path / "charts.png"
     save_training_figure(log, out)
     assert out.stat().st_size > 0
+
+
+def test_charts_plot_against_training_steps(tmp_path):
+    """Curves use the total_steps column for x, so short solved episodes don't stretch the axis."""
+    log = read_log(write_log(tmp_path / "run" / "episodes.csv"))
+    fig = training_figure(log, size=(6, 4), dpi=50)
+    for ax in fig.get_axes():
+        for line in ax.get_lines():
+            np.testing.assert_array_equal(line.get_xdata(), log.total_steps)
+    assert fig.get_axes()[-1].get_xlabel() == "Training steps"

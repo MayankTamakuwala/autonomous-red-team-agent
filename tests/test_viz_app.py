@@ -9,6 +9,7 @@ import pygame
 import pytest
 
 from src.env.env_setup import SCENARIO_DIR
+from src.viz import theme
 from src.viz.app import App
 from src.viz.session import RandomPolicy, Session
 
@@ -76,3 +77,31 @@ def test_every_view_draws(app):
     app.command("help")
     ticks(app, 0.1)
     assert os.environ["SDL_VIDEODRIVER"] == "dummy"
+
+
+def test_font_falls_back_when_a_file_cannot_draw(monkeypatch, tmp_path):
+    """A font file that is missing or broken is skipped, and text still renders."""
+    pygame.font.init()
+    broken = tmp_path / "broken.ttf"
+    broken.write_bytes(b"not a font")
+    monkeypatch.setattr(theme, "FONT_FILES", [str(tmp_path / "missing.ttf"), str(broken)])
+    theme.reset_caches()
+    try:
+        assert not theme.draws_text(str(broken))
+        assert theme.draws_text(None)  # pygame's built-in font
+        image = theme.font(14).render("(1,0)", True, (255, 255, 255))
+        assert image.get_bounding_rect().width > 0
+    finally:
+        theme.reset_caches()
+
+
+def test_drawing_never_depends_on_window_alpha(app):
+    """The canvas and the map's cached background have no alpha channel, and each frame is
+    copied to the window. On windows whose format has alpha, text drawn on see-through pixels
+    showed up as solid blocks."""
+    assert app.screen.get_masks()[3] == 0
+    assert app.map._background.get_masks()[3] == 0  # pylint: disable=protected-access
+    app.tick(FRAME)
+    window = pygame.display.get_surface()
+    spot = app.rects.panel.center
+    assert window.get_at(spot)[:3] == app.screen.get_at(spot)[:3]

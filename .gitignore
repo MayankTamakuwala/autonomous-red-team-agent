@@ -31,4 +31,3 @@ configs/*_local.yml
 .vscode/
 .idea/
 .DS_Store
-/results

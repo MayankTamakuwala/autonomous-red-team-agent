@@ -130,7 +130,7 @@ pytest
   dashed magenta rings mark honeypots. The side panel shows the action, its result and reward, the
   running total, redundant and failed action counts, and the trained agent's top-scored next actions.
 - **Training charts:** total reward and steps per episode from a run's `episodes.csv`, with a
-  20-episode moving average.
+  20-episode moving average, plotted against training steps so curves from different runs line up.
 
 Train a config, then open the GUI for the run it produced. Runs are named `<config>_seed<N>`:
 

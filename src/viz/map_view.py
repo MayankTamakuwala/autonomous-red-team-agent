@@ -126,7 +126,7 @@ class MapView:  # pylint: disable=too-many-instance-attributes
 
     def _draw_background(self):
         """Orbits, subnet bands, and subnet labels, drawn once per window size."""
-        background = pygame.Surface(self.rect.size)
+        background = theme.opaque(self.rect.size)
         background.fill(theme.BACKGROUND)
         center = self._local(self.to_screen((0, 0)))
         theme.glow(background, (28, 36, 74), center, self.layout.outer_radius * self.scale * 1.1)

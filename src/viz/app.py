@@ -109,7 +109,9 @@ class App:  # pylint: disable=too-many-instance-attributes
         pygame.font.init()
         theme.reset_caches()
         pygame.display.set_caption(f"Red-team agent  ·  {title}")
-        self.screen = pygame.display.set_mode((1280, 780), pygame.RESIZABLE)
+        pygame.display.set_mode((1280, 780), pygame.RESIZABLE)
+        # Everything is drawn on this canvas, then copied to the window in one blit (see draw)
+        self.screen = None
         self.clock = pygame.time.Clock()
         self.session = session
         self.policies = policies
@@ -419,7 +421,8 @@ class App:  # pylint: disable=too-many-instance-attributes
     # ----- drawing -----
 
     def _resize(self):
-        width, height = self.screen.get_size()
+        width, height = pygame.display.get_surface().get_size()
+        self.screen = theme.opaque((width, height))
         middle = height - TOP_BAR - BOTTOM_BAR
         self.rects = Rects(
             top=pygame.Rect(0, 0, width, TOP_BAR),
@@ -432,7 +435,14 @@ class App:  # pylint: disable=too-many-instance-attributes
         self.ui.menu = None
 
     def draw(self):
-        """Draw the current view."""
+        """Draw the current view on the canvas, then copy the canvas to the window.
+
+        The canvas has no alpha channel (theme.opaque), so drawing looks the same whatever
+        pixel format the window has.
+        """
+        window = pygame.display.get_surface()
+        if window.get_size() != self.screen.get_size():  # e.g. fullscreen without a resize event
+            self._resize()
         self.screen.fill(theme.BACKGROUND)
         if self.ui.view == "replay":
             self._draw_replay()
@@ -443,6 +453,7 @@ class App:  # pylint: disable=too-many-instance-attributes
             hud.draw_help(self.screen, self.screen.get_rect())
         if self.time < self.ui.toast_until:
             self._draw_toast()
+        window.blit(self.screen, (0, 0))
 
     def _draw_replay(self):
         frames, playback = self.session.frames, self.playback

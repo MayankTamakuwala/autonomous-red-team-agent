@@ -88,8 +88,23 @@ def subnet_color(subnet):
 
 @lru_cache(maxsize=None)
 def _font_file():
-    """The first monospace font file that exists, or None for pygame's built-in font."""
-    return next((path for path in FONT_FILES if Path(path).is_file()), None)
+    """The first font file that loads and draws visible text, or None for pygame's built-in font.
+
+    A file existing is not enough: some installs load a font but render blank text with it,
+    which left every label empty. Testing a real render catches that and falls back.
+    """
+    return next((path for path in FONT_FILES if draws_text(path)), None)
+
+
+def draws_text(path):
+    """True if the font at `path` (None for pygame's built-in font) renders visible pixels."""
+    if path is not None and not Path(path).is_file():
+        return False
+    try:
+        sample = pygame.font.Font(path, 16).render("(1,0) +100 $#?", True, (255, 255, 255))
+    except (OSError, pygame.error):
+        return False
+    return sample.get_bounding_rect().width > 0
 
 
 @lru_cache(maxsize=None)
@@ -103,6 +118,7 @@ def font(size, bold=False):
 def reset_caches():
     """Forget cached fonts and sprites. Needed after pygame.quit(), which invalidates fonts."""
     font.cache_clear()
+    _font_file.cache_clear()
     _glow_sprite.cache_clear()
 
 
@@ -159,6 +175,20 @@ def polyline(surface, color, points, width=1):
     pygame.draw.aalines(surface, color, False, points)
 
 
+# Red, green, and blue masks with no alpha mask: surfaces built with these have no alpha channel
+OPAQUE_MASKS = (0xFF0000, 0x00FF00, 0x0000FF, 0)
+
+
+def opaque(size):
+    """A surface with no alpha channel, whatever pixel format the window uses.
+
+    A plain pygame.Surface copies the window's format. On some machines that format has an
+    alpha channel, and text drawn onto pixels whose alpha isn't solid showed up as solid
+    blocks in the text's color. Drawing on surfaces without alpha avoids that.
+    """
+    return pygame.Surface(size, 0, 32, OPAQUE_MASKS)
+
+
 def translucent(size):
     """A transparent surface to draw see-through shapes on before blitting."""
     return pygame.Surface(size, pygame.SRCALPHA)
@@ -167,7 +197,7 @@ def translucent(size):
 @lru_cache(maxsize=256)
 def _glow_sprite(color, radius):
     size = radius * 2
-    sprite = pygame.Surface((size, size))
+    sprite = opaque((size, size))
     sprite.fill((0, 0, 0))
     for r in range(radius, 0, -1):
         strength = (1 - r / radius) ** 2

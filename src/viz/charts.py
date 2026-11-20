@@ -1,5 +1,10 @@
 """Training charts drawn with matplotlib: total reward and steps per episode.
 
+The x-axis is training steps (the total_steps column), not episode number. Once an agent solves a
+network its episodes get short, so an episode axis would spend most of its width on thousands of
+short, already-solved episodes and squeeze the learning into the left edge. Training steps also
+line up across runs, so curves from different runs can be compared.
+
 The GUI draws the figure off-screen and shows the pixels; the same figure can be saved as a
 PNG for reports. pyplot is never imported, so matplotlib opens no windows of its own.
 """
@@ -20,23 +25,26 @@ REWARD = "#ffb547"
 STEPS = "#4cc9f0"
 MISSED = "#ff5c7a"
 
+STEPS_LABEL = "Training steps"
+
 
 def training_figure(log, size=(9.0, 6.0), dpi=100, window=20):
-    """Figure with reward per episode on top and steps per episode below.
+    """Figure with reward per episode on top and steps per episode below, against training steps.
 
-    Raw values are faint; the moving average over `window` episodes is drawn bold. Episodes
-    that did not reach the goal are marked along the bottom of the steps chart.
+    Each episode is plotted at the training step it ended on. Raw values are faint; the moving
+    average over `window` episodes is drawn bold. Episodes that did not reach the goal are marked
+    along the bottom of the steps chart.
     """
     fig = Figure(figsize=size, dpi=dpi, facecolor=BACKGROUND)
     reward_ax, steps_ax = fig.subplots(2, 1, sharex=True)
-    episodes = log.episode
+    ended_at = log.total_steps
 
-    _plot_series(reward_ax, episodes, log.reward, REWARD, window, "Total reward per episode")
-    _plot_series(steps_ax, episodes, log.steps, STEPS, window, "Steps per episode")
+    _plot_series(reward_ax, ended_at, log.reward, REWARD, window, "Total reward per episode")
+    _plot_series(steps_ax, ended_at, log.steps, STEPS, window, "Steps per episode")
     missed = ~log.goal_reached
     if missed.any():
         steps_ax.scatter(
-            episodes[missed],
+            ended_at[missed],
             np.full(missed.sum(), steps_ax.get_ylim()[0]),
             marker="|",
             color=MISSED,
@@ -44,7 +52,7 @@ def training_figure(log, size=(9.0, 6.0), dpi=100, window=20):
             label="goal not reached",
             zorder=3,
         )
-    steps_ax.set_xlabel("Episode", color=MUTED)
+    steps_ax.set_xlabel(STEPS_LABEL, color=MUTED)
     for ax in (reward_ax, steps_ax):
         ax.legend(loc="best", fontsize=8, facecolor=PANEL, edgecolor=GRID, labelcolor=TEXT)
 
@@ -71,18 +79,24 @@ def save_training_figure(log, path, window=20):
     fig.savefig(path, facecolor=fig.get_facecolor())
 
 
-def _plot_series(ax, episodes, values, color, window, title):
+def style_axes(ax, title):
+    """Dark-theme background, grid, ticks, and a left-aligned title."""
     ax.set_facecolor(PANEL)
-    ax.plot(episodes, values, color=color, alpha=0.25, linewidth=0.8, label="per episode")
+    ax.set_title(title, color=TEXT, fontsize=10, loc="left")
+    ax.grid(color=GRID, linewidth=0.6)
+    ax.tick_params(colors=MUTED, labelsize=8)
+    ax.xaxis.get_offset_text().set_color(MUTED)
+    for spine in ax.spines.values():
+        spine.set_color(GRID)
+
+
+def _plot_series(ax, ended_at, values, color, window, title):
+    style_axes(ax, title)
+    ax.plot(ended_at, values, color=color, alpha=0.25, linewidth=0.8, label="per episode")
     ax.plot(
-        episodes,
+        ended_at,
         moving_average(values, window),
         color=color,
         linewidth=2.2,
         label=f"{window}-episode average",
     )
-    ax.set_title(title, color=TEXT, fontsize=10, loc="left")
-    ax.grid(color=GRID, linewidth=0.6)
-    ax.tick_params(colors=MUTED, labelsize=8)
-    for spine in ax.spines.values():
-        spine.set_color(GRID)
