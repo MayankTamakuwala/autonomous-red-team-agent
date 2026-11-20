@@ -7,6 +7,10 @@ pyyaml==6.0.3  # reads the training configs in configs/
 # Neural network math for the agent (the RL algorithm itself is written from scratch)
 torch==2.15.0
 
+# Demo GUI (scripts/visualize.py): pygame draws the window, matplotlib draws the training charts
+pygame==2.6.1
+matplotlib==3.11.2
+
 # Imported by PenGym at startup; no Metasploit server or nmap binary is needed in simulation mode
 pymetasploit3==1.0.6
 python-nmap==0.7.1
