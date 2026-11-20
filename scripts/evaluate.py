@@ -102,17 +102,20 @@ def evaluate_run(run_name, n_episodes, threshold):
 
 
 def mean_std(values, fmt):
-    """'mean ± std' of the values, formatted with fmt; None values are left out and counted."""
+    """Mean and standard deviation of the values, formatted with fmt.
+
+    None values (seeds that never learned) are left out and counted instead.
+    """
     found = [v for v in values if v is not None]
     if not found:
         return "never"
-    text = f"{fmt.format(np.mean(found))} ± {fmt.format(np.std(found))}"
+    text = f"{fmt.format(np.mean(found))} \N{PLUS-MINUS SIGN} {fmt.format(np.std(found))}"
     missing = len(values) - len(found)
     return f"{text} ({missing} never)" if missing else text
 
 
 def print_table(rows):
-    """Print one line per seed, then mean ± std across seeds."""
+    """Print one line per seed, then the mean and standard deviation across seeds."""
     print(f"{'run':<30}{'reward':>9}{'steps':>8}{'goal':>7}{'redundant':>11}{'learned at':>13}")
     for row in rows:
         learned = row["learned_at_step"]
@@ -122,7 +125,7 @@ def print_table(rows):
             f"{row['redundant_ratio']:>11.0%}{learned:>13}"
         )
 
-    print(f"\nAcross {len(rows)} seeds (mean ± std):")
+    print(f"\nAcross {len(rows)} seeds (mean \N{PLUS-MINUS SIGN} std):")
     print(f"  reward           {mean_std([r['reward'] for r in rows], '{:.1f}')}")
     print(f"  steps            {mean_std([r['steps'] for r in rows], '{:.1f}')}")
     print(f"  goal rate        {mean_std([r['goal_rate'] for r in rows], '{:.0%}')}")
