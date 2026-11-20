@@ -10,6 +10,7 @@ max_episode_steps: 1000
 hidden_size: 128
 lr: 0.0005
 gamma: 0.95
+double_dqn: true
 
 # Replay buffer
 batch_size: 32
