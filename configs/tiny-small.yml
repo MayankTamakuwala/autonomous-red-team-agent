@@ -1,0 +1,29 @@
+# 5 hosts, 45 actions.
+scenario: external/PenGym/database/scenarios/tiny-small.yml
+seed: 0
+
+# How long to train
+total_steps: 50000
+max_episode_steps: 1000
+
+# Network and learning
+hidden_size: 128
+lr: 0.0005
+gamma: 0.95
+
+# Replay buffer
+batch_size: 32
+buffer_capacity: 50000
+learning_starts: 2000
+train_every: 1
+
+# Target network
+target_update: 1000
+
+# Exploration (epsilon drops from start to end over eps_decay_steps)
+eps_start: 1.0
+eps_end: 0.05
+eps_decay_steps: 25000
+
+# Print a progress line every N episodes
+log_every: 20
