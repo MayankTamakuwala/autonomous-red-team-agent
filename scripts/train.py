@@ -56,13 +56,16 @@ DEFAULTS = {
 }
 
 
-def load_config(path, seed_override=None):
+def load_config(path, seed_override=None, run_name_override=None):
     """Read a YAML config, fill in missing settings from DEFAULTS, and name the run."""
     with open(path, encoding="utf-8") as f:
         cfg = {**DEFAULTS, **(yaml.safe_load(f) or {})}
     if seed_override is not None:
         cfg["seed"] = seed_override
-    cfg["run_name"] = f"{Path(path).stem}_seed{cfg['seed']}"
+    if seed_override is not None:
+        cfg["run_name"] = run_name_override
+    else:
+        cfg["run_name"] = f"{Path(path).stem}_seed{cfg['seed']}"
     return cfg
 
 
@@ -177,8 +180,9 @@ def main():
     )
     parser.add_argument("--config", required=True, help="Path to a YAML config in configs/")
     parser.add_argument("--seed", type=int, default=None, help="Override the config's seed")
+    parser.add_argument("--name", type=str, default=None, help="default_run")
     args = parser.parse_args()
-    train(load_config(args.config, args.seed))
+    train(load_config(args.config, args.seed, args.name))
 
 
 if __name__ == "__main__":
