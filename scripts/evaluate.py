@@ -154,6 +154,19 @@ def main():
 
     name = args.name or Path(args.config).stem
     seeds = [int(s) for s in args.seeds.split(",")]
+    missing = [
+        seed
+        for seed in seeds
+        if not (REPO_ROOT / "checkpoints" / f"{name}_seed{seed}.pt").is_file()
+        or not (REPO_ROOT / "results" / f"{name}_seed{seed}" / "config.yml").is_file()
+    ]
+    if missing:
+        name_flag = f" --name {args.name}" if args.name else ""
+        sys.exit(
+            f"No trained run for {name} with seed(s) {missing}. Train each one first:\n"
+            f"    python scripts/train.py --config {args.config} --seed <N>{name_flag}"
+        )
+
     rows = [evaluate_run(f"{name}_seed{seed}", args.episodes, args.threshold) for seed in seeds]
     print_table(rows)
 
