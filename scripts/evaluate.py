@@ -1,17 +1,20 @@
 """Measure trained agents with exploration turned off, for every seed of one config.
 
 Usage:
-    python scripts/evaluate.py --config configs/tiny.yml
+    python scripts/evaluate.py --config configs/tiny.yml                # tiny_ddqn_seed0 ... seed4
     python scripts/evaluate.py --config configs/small-linear.yml --seeds 0,1,2 --episodes 20
-    python scripts/evaluate.py --config configs/tiny.yml --name tiny-test   # tiny-test_seed<N>
+    python scripts/evaluate.py --config configs/tiny.yml --name test    # test_ddqn_seed0 ... seed4
 
-Reads, for each seed N (what scripts/train.py wrote):
-    checkpoints/<name>_seed<N>.pt          the trained Q-network
-    results/<name>_seed<N>/config.yml      the settings it was trained with
-    results/<name>_seed<N>/episodes.csv    its training log, for how fast it learned
+Runs are found by the name scripts/train.py gave them: <config filename or --name>_<dqn or
+ddqn>_seed<N>, where dqn or ddqn comes from the config's double_dqn setting.
+
+Reads, for each seed N:
+    checkpoints/<run>.pt          the trained Q-network
+    results/<run>/config.yml      the settings it was trained with
+    results/<run>/episodes.csv    its training log, for how fast it learned
 
 Writes:
-    results/eval/<name>.csv                one row per seed
+    results/eval/<name>_<dqn or ddqn>.csv    one row per seed
 """
 
 import argparse
@@ -29,6 +32,7 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO_ROOT))
 
 # pylint: disable=wrong-import-position
+from scripts.train import load_config
 from src.agent.dqn_agent import DQNAgent
 from src.env.env_setup import make_env
 
@@ -152,25 +156,27 @@ def main():
     )
     args = parser.parse_args()
 
-    name = args.name or Path(args.config).stem
     seeds = [int(s) for s in args.seeds.split(",")]
+    # The same names scripts/train.py gave the runs
+    runs = [load_config(args.config, seed, args.name)["run_name"] for seed in seeds]
     missing = [
-        seed
-        for seed in seeds
-        if not (REPO_ROOT / "checkpoints" / f"{name}_seed{seed}.pt").is_file()
-        or not (REPO_ROOT / "results" / f"{name}_seed{seed}" / "config.yml").is_file()
+        run
+        for run in runs
+        if not (REPO_ROOT / "checkpoints" / f"{run}.pt").is_file()
+        or not (REPO_ROOT / "results" / run / "config.yml").is_file()
     ]
     if missing:
         name_flag = f" --name {args.name}" if args.name else ""
         sys.exit(
-            f"No trained run for {name} with seed(s) {missing}. Train each one first:\n"
+            f"Not trained yet: {', '.join(missing)}. Train each one first:\n"
             f"    python scripts/train.py --config {args.config} --seed <N>{name_flag}"
         )
 
-    rows = [evaluate_run(f"{name}_seed{seed}", args.episodes, args.threshold) for seed in seeds]
+    rows = [evaluate_run(run, args.episodes, args.threshold) for run in runs]
     print_table(rows)
 
-    out = REPO_ROOT / "results" / "eval" / f"{name}.csv"
+    group = runs[0].rsplit("_seed", 1)[0]  # e.g. small-linear_ddqn
+    out = REPO_ROOT / "results" / "eval" / f"{group}.csv"
     out.parent.mkdir(parents=True, exist_ok=True)
     with open(out, "w", newline="", encoding="utf-8") as f:
         writer = csv.DictWriter(f, fieldnames=list(rows[0]))
