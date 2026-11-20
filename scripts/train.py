@@ -1,8 +1,12 @@
 """Train a DQN agent on one scenario.
 
 Usage:
-    python scripts/train.py --config configs/tiny.yml
-    python scripts/train.py --config configs/tiny.yml --seed 1
+    python scripts/train.py --config configs/tiny.yml                          # tiny_ddqn_seed0
+    python scripts/train.py --config configs/tiny.yml --seed 1                 # tiny_ddqn_seed1
+    python scripts/train.py --config configs/tiny.yml --seed 1 --name test     # test_ddqn_seed1
+
+The run name is <config filename or --name>_<dqn or ddqn>_seed<N>, so runs of the two
+algorithms never overwrite each other.
 
 Writes:
     results/<run_name>/episodes.csv   one row per episode
@@ -62,10 +66,9 @@ def load_config(path, seed_override=None, run_name_override=None):
         cfg = {**DEFAULTS, **(yaml.safe_load(f) or {})}
     if seed_override is not None:
         cfg["seed"] = seed_override
-    if seed_override is not None:
-        cfg["run_name"] = run_name_override
-    else:
-        cfg["run_name"] = f"{Path(path).stem}_seed{cfg['seed']}"
+    name = run_name_override or Path(path).stem
+    algorithm = "ddqn" if cfg["double_dqn"] else "dqn"
+    cfg["run_name"] = f"{name}_{algorithm}_seed{cfg['seed']}"
     return cfg
 
 
@@ -180,7 +183,12 @@ def main():
     )
     parser.add_argument("--config", required=True, help="Path to a YAML config in configs/")
     parser.add_argument("--seed", type=int, default=None, help="Override the config's seed")
-    parser.add_argument("--name", type=str, default=None, help="default_run")
+    parser.add_argument(
+        "--name",
+        type=str,
+        default=None,
+        help="Run name (default: the config's filename). The algorithm and seed are added.",
+    )
     args = parser.parse_args()
     train(load_config(args.config, args.seed, args.name))
 
