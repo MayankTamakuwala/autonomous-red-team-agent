@@ -3,6 +3,7 @@
 Usage:
     python scripts/train.py --config configs/tiny.yml
     python scripts/train.py --config configs/tiny.yml --seed 1
+    python scripts/train.py --config configs/tiny.yml --seed 1 --name tiny-test   # tiny-test_seed1
 
 Writes:
     results/<run_name>/episodes.csv   one row per episode
@@ -62,10 +63,8 @@ def load_config(path, seed_override=None, run_name_override=None):
         cfg = {**DEFAULTS, **(yaml.safe_load(f) or {})}
     if seed_override is not None:
         cfg["seed"] = seed_override
-    if seed_override is not None:
-        cfg["run_name"] = run_name_override
-    else:
-        cfg["run_name"] = f"{Path(path).stem}_seed{cfg['seed']}"
+    name = run_name_override or Path(path).stem
+    cfg["run_name"] = f"{name}_seed{cfg['seed']}"
     return cfg
 
 
@@ -180,7 +179,12 @@ def main():
     )
     parser.add_argument("--config", required=True, help="Path to a YAML config in configs/")
     parser.add_argument("--seed", type=int, default=None, help="Override the config's seed")
-    parser.add_argument("--name", type=str, default=None, help="default_run")
+    parser.add_argument(
+        "--name",
+        type=str,
+        default=None,
+        help="Run name (default: the config's filename). The seed is added to the end.",
+    )
     args = parser.parse_args()
     train(load_config(args.config, args.seed, args.name))
 
