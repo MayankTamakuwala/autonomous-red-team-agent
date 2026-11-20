@@ -1,9 +1,9 @@
 """Train a DQN agent on one scenario.
 
 Usage:
-    python scripts/train.py --config configs/tiny.yml                             # tiny_ddqn_seed0
-    python scripts/train.py --config configs/tiny.yml --seed 1                    # tiny_ddqn_seed1
-    python scripts/train.py --config configs/tiny.yml --seed 1 --name tiny-test   # tiny-test_ddqn_seed1
+    python scripts/train.py --config configs/tiny.yml                          # tiny_ddqn_seed0
+    python scripts/train.py --config configs/tiny.yml --seed 1                 # tiny_ddqn_seed1
+    python scripts/train.py --config configs/tiny.yml --seed 1 --name test     # test_ddqn_seed1
 
 The run name is <config filename or --name>_<dqn or ddqn>_seed<N>, so runs of the two
 algorithms never overwrite each other.
