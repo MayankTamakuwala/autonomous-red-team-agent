@@ -2,7 +2,7 @@
 
 import numpy as np
 
-from scripts.compare_runs import parse_run
+from scripts.compare_runs import config_runs, parse_run
 from src.viz.compare import comparison_figure, group_curve, group_runs, save_comparison_figure
 from src.viz.training_log import read_log
 from tests.test_viz_training_log import write_log
@@ -62,3 +62,24 @@ def test_parse_run():
     """RUN=LABEL splits into both parts; a bare RUN has no label."""
     assert parse_run("tiny_seed0=sparse") == ("tiny_seed0", "sparse")
     assert parse_run("tiny_seed0") == ("tiny_seed0", None)
+
+
+def test_config_runs_groups_by_algorithm(tmp_path):
+    """Runs of one config are found and grouped by the part between config and seed; runs of
+    configs that only share a prefix (tiny-small) and old names without a group are skipped."""
+    for name in [
+        "tiny_ddqn_seed10",
+        "tiny_ddqn_seed2",
+        "tiny_dqn_seed0",
+        "tiny-small_ddqn_seed0",
+        "tiny_seed0",
+    ]:
+        write_log(tmp_path / name / "episodes.csv", n=3)
+    (tmp_path / "tiny_ddqn_seed5").mkdir()  # no episodes.csv yet: skipped
+    found = config_runs("configs/tiny.yml", tmp_path)
+    assert [(group, folder.name) for group, folder in found] == [
+        ("ddqn", "tiny_ddqn_seed2"),
+        ("ddqn", "tiny_ddqn_seed10"),
+        ("dqn", "tiny_dqn_seed0"),
+    ]
+    assert not config_runs("small-linear", tmp_path)
