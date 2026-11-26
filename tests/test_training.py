@@ -1,11 +1,16 @@
 """Tests for DQNAgent learning (src/agent/dqn_agent.py) and the epsilon schedule."""
 
+import random
+
 import numpy as np
 import torch
 
 from src.agent.dqn_agent import DQNAgent
+from src.agent.host_replay_buffer import HostReplayBuffer
 from src.agent.replay_buffer import ReplayBuffer
 from src.agent.schedules import linear_epsilon
+from src.env.common_view import CommonView
+from src.env.env_setup import SCENARIO_DIR, make_env
 
 OBS_SIZE = 4
 N_ACTIONS = 3
@@ -53,6 +58,29 @@ def test_learn_updates_q_net_but_not_target():
     loss = agent.learn(make_batch())
 
     assert isinstance(loss, float)
+    assert not same_weights(q_before, weights(agent.q_net))
+    assert same_weights(target_before, weights(agent.target_net))
+
+
+def test_host_wise_learn_on_mixed_networks():
+    """A host-wise agent learns from a batch that mixes tiny and medium-multi-site steps."""
+    random.seed(0)
+    torch.manual_seed(0)
+    agent = DQNAgent(host_wise=True, double=True)
+    buffer = HostReplayBuffer(capacity=16)
+    for name in ["tiny", "medium-multi-site"]:
+        env = CommonView(make_env(SCENARIO_DIR / f"{name}.yml", seed=0))
+        obs, _ = env.reset(seed=0)
+        for _ in range(8):
+            action = agent.act(obs, 1.0, env.action_mask)
+            next_obs, reward, done, _, _ = env.step(action)
+            buffer.add(obs, action, reward, next_obs, done, env.action_mask)
+            obs = next_obs
+    q_before, target_before = weights(agent.q_net), weights(agent.target_net)
+
+    loss = agent.learn(buffer.sample(16))
+
+    assert isinstance(loss, float) and np.isfinite(loss)
     assert not same_weights(q_before, weights(agent.q_net))
     assert same_weights(target_before, weights(agent.target_net))
 
